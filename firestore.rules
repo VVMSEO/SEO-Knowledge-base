@@ -1,0 +1,60 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isValidDocumentCreate(data) {
+      return data.keys().hasAll(['id', 'name', 'content', 'userId', 'createdAt', 'updatedAt'])
+        && data.keys().size() <= 9
+        && data.id is string && data.id.size() <= 128
+        && data.name is string && data.name.size() <= 500
+        && data.content is string && data.content.size() <= 1048576
+        && data.userId == request.auth.uid
+        && data.createdAt == request.time
+        && data.updatedAt == request.time
+        && (data.get('folderId', '') is string)
+        && (data.get('mimeType', '') is string)
+        && (data.get('webViewLink', '') is string);
+    }
+    
+    function isValidDocumentUpdate(data) {
+       return data.userId == existing().userId
+             && data.createdAt == existing().createdAt
+             && data.updatedAt == request.time
+             && data.id is string && data.id.size() <= 128
+             && data.name is string && data.name.size() <= 500
+             && data.content is string && data.content.size() <= 1048576
+             && (data.get('folderId', '') is string)
+             && (data.get('mimeType', '') is string)
+             && (data.get('webViewLink', '') is string);
+    }
+
+    match /documents/{documentId} {
+      allow get: if isSignedIn() && isValidId(documentId) && (resource == null || resource.data.userId == request.auth.uid);
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && isValidId(documentId) && isValidDocumentCreate(incoming());
+      allow update: if isSignedIn() && isValidId(documentId) && existing().userId == request.auth.uid 
+                    && isValidDocumentUpdate(incoming())
+                    && incoming().diff(existing()).affectedKeys().hasOnly(['name', 'content', 'updatedAt', 'folderId', 'mimeType', 'webViewLink']);
+      allow delete: if isSignedIn() && isValidId(documentId) && existing().userId == request.auth.uid;
+    }
+  }
+}

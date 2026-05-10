@@ -1,0 +1,27 @@
+{
+  "entities": {
+    "Document": {
+      "title": "Document",
+      "description": "Indexed file from Google Drive",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "mimeType": { "type": "string" },
+        "webViewLink": { "type": "string" },
+        "content": { "type": "string" },
+        "folderId": { "type": "string" },
+        "userId": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "name", "content", "userId", "createdAt", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "/documents/{documentId}": {
+      "schema": "Document",
+      "description": "User's indexed documents"
+    }
+  }
+}
