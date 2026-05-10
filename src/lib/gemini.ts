@@ -1,7 +1,7 @@
 import { SYSTEM_PROMPT, KNOWLEDGE_BASE } from '../data/materials';
 import { GlobalStore } from './store';
 
-const ROUTERAI_API_KEY = (import.meta as any).env?.VITE_ROUTERAI_API_KEY || 'sk-qbf6ACgy2tmghGMBdty2uA3lWSHY98w7';
+const ROUTERAI_API_KEY = (import.meta as any).env?.VITE_ROUTERAI_API_KEY || 'sk-idWLIk8WBHJJiwn-Y2oyMNdW0ckjsfIa';
 
 export async function askAdvisor(userPrompt: string): Promise<string> {
   // Inject Knowledge Base into the system prompt
